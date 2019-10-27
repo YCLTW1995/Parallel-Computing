@@ -1,0 +1,116 @@
+#!/bin/bash
+
+function print_help() {
+	echo "usage: $0 100M|1G|10G|50G ITER FILE"
+	echo " ITER: No. ITER of iteration"
+	echo " FILE: file to be compared"
+	echo "e.g.: hw5-diff 100M 10 pagerank_out.txt"
+	exit 0
+}
+
+function print_pass() {
+
+	#echo -e -n "\E[0;31m"
+	#echo ""
+	#echo -e "\t█████     █      █████   █████   ██████  █████   "
+	#echo -e "\t█    █   █ █    █     █ █     █  █       █    █  "
+	#echo -e "\t█    █  █   █   █       █        █       █     █ "
+	#echo -e "\t█████  █     █   █████   █████   █████   █     █ "
+	#echo -e "\t█      ███████        █       █  █       █     █ "
+	#echo -e "\t█      █     █  █     █ █     █  █       █    █  "
+	#echo -e "\t█      █     █   █████   █████   ███████ █████   "
+	#echo ""
+	#echo -e -n "\E[0m"
+
+	figlet PASSED | toilet --metal -f term --gay
+
+	echo -e "\E[0;32mPassed(if there's no other error)\E[0m"
+	echo -e "This simple script only helps you to compare output files.\nIt doesn't guarantee the correctness of the details of your code."
+
+}
+
+if (( $# < 3 )); then
+	print_help
+fi
+
+max_iter=0
+if [[ "$1" == "100M" ]]; then
+	max_iter=21
+	threshold=1*10^-14
+elif [[ "$1" == "1G" ]]; then
+	max_iter=22
+	threshold=1*10^-14
+elif [[ "$1" == "10G" ]]; then
+	max_iter=22
+	threshold=2*10^-12
+elif [[ "$1" == "50G" ]]; then
+	max_iter=16
+	threshold=2*10^-12
+else
+	print_help
+fi
+
+if [ "$2" -gt "$max_iter" ]||[ "$2" -lt "1" ]; then
+	echo "\E[0;31mITER limit exceeded\E[0m"
+	exit 0
+fi
+
+if [ ! -f "$3" ]; then
+	echo -e "\E[0;31mcannot access $3: No such file\E[0m"
+	exit 0
+fi
+
+
+ans_file=/home/pp17/ta/hw5/samples/ans_${1}_${2}.txt
+user_file=$3
+error_sum=0
+
+num_line=$(wc -l $user_file | cut -d' ' -f1)
+if [ "$num_line" -lt "100" ]; then
+	echo -e "\E[0;31mInsufficient samples in output file\E[0m"
+	exit 0
+fi
+
+for i in {1..100}; do
+
+	page_A=$(head -n $i $ans_file  | tail -n 1 | cut -d$'\t' -f1)
+	page_B=$(head -n $i $user_file | tail -n 1 | cut -d$'\t' -f1)
+	
+	if [[ "$page_A" != "$page_A" ]]; then
+		echo "Wrong answer in line $i"
+		echo "Answer     : $page_A"
+		echo "Your output: $page_B"
+		exit 0
+	fi
+	
+	score_A=$(head -n $i $ans_file  | tail -n 1 | cut -d$'\t' -f2 | sed -e 's/[eE]+*/\*10\^/')
+	score_B=$(head -n $i $user_file | tail -n 1 | cut -d$'\t' -f2 | sed -e 's/[eE]+*/\*10\^/')
+
+	error=$(echo "scale=30; $score_A - $score_B" | bc)
+	if [ "$?" != 0 ]; then
+		echo -e "\E[0;31mError in calculating error\E[0m"
+		exit 0
+	fi
+
+	if [ $(echo "$error <= 0.0" | bc) == 1 ]; then
+		error=$(echo "scale=30; $error * -1" | bc)
+	fi
+	
+	#echo "score_A: $score_A"
+	#echo "score_B: $score_B"
+	#echo "error: $error"
+	#echo "error_sum: $error_sum"
+	#echo
+	error_sum=$(echo "scale=30; $error_sum + $error" | bc)
+done
+
+echo -e "Error\t\t: $error_sum"
+echo -e "Threshold\t: $threshold"
+
+if [ $(echo "scale=30; $error_sum <= $threshold" | bc) == 1 ]; then
+	print_pass
+else
+	echo -e "\E[0;31mThe error is greater than threshold\E[0m"
+fi
+
+exit 0

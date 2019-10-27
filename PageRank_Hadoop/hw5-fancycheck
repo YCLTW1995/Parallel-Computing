@@ -1,0 +1,70 @@
+#!/bin/bash
+
+function error_exit() {
+	echo -e "\E[0;94mCheck finished with error\E[0m"
+	exit 0
+}
+
+function differDay(){
+	a=`date --date="$1" +%s`
+	b=`date --date="$2" +%s`
+	if [ $a -gt $b ]; then
+		c=`expr $a - $b`
+		d=`expr "scale=0;$c / 3600 / 24 * -1" | bc`
+		echo -n $d
+	else
+		c=`expr $b - $a`
+		d=`expr "scale=0;$c / 3600 / 24 * 1" | bc`
+		echo -n $d
+	fi
+}
+
+SUBMITTING_DIR=$HOME/homework/HW5
+
+if [ ! -f $SUBMITTING_DIR/Makefile ]; then
+	echo -e "\E[0;31mMakefile not found in \"$SUBMITTING_DIR\"\E[0m"
+	error_exit
+fi
+
+LOGS=$(stat $(find $SUBMITTING_DIR) | grep -E "File|Change" | awk 'NR%2{printf "%s ",$0;next;}1')
+
+echo "+---------------------------------------------------+------------------------------+----------+"
+echo "| File                                              | Submitted Date               | Delay    |"
+echo "+---------------------------------------------------+------------------------------+----------+"
+echo "$LOGS" | while read -r line; do
+	echo -n "| "
+	FILE=$(echo $line | cut -d' ' -f2 | sed 's/‘//g' | sed 's/’//g' | sed -e "s#$SUBMITTING_DIR/##g")
+	echo -n $FILE
+	STR_LEN=${#FILE}
+	for (( i=0; i<$((50-STR_LEN)); i++ )); do
+		echo -n " "
+	done
+	echo -n "| "
+	
+	DATE=$(echo $line | cut -d' ' -f4,5,6 | sed 's/‘//g' | sed 's/’//g')
+	DATE_R=$(date -d "$DATE")
+	echo -n "$DATE_R "
+	echo -n "| "
+	
+	DELAY=$(differDay "Mon Jan 15 00:00:00 CST 2018" "$DATE_R")
+	#DELAY=$(differDay "Mon Jan 14 00:00:00 CST 2018" "2018-01-15 00:00:01")
+	STR_LEN=${#DELAY}
+	for (( i=0; i<$((3-STR_LEN)); i++ )); do
+		echo -n " "
+	done
+	if [ ${DELAY} -gt "0" ]; then
+		echo -n -e "\E[0;31m$DELAY\E[0m"
+	else
+		echo -n -e "\E[0;32m$DELAY\E[0m"
+	fi
+	echo -n " Days "
+
+
+	echo "| "
+done
+echo "+---------------------------------------------------+------------------------------+----------+"
+
+#echo -e "\E[0;31mRemember to submit your report to iLMS!\E[0m"
+#echo -e "\E[0;32mRemember to submit your report to iLMS!\E[0m"
+#echo -e "\E[0;94mRemember to submit your report to iLMS!\E[0m"
+cowsay -f dragon-and-cow 'Remember to submit your report to iLMS!!!'
