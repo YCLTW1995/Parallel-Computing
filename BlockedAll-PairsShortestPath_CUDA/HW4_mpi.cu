@@ -290,37 +290,21 @@ void block_FW(int rank , int size ) {
    //         fuckcuda<<<blocknum, blocksize>>>(garr , gdata);  
             
         }
-    /*    
-        if(rank == 1 ) {
-            MPI_Send(&dist[pos] ,height * n , MPI_INT , 0 , 0 , MPI_COMM_WORLD ) ;    
-        }
-        else if(rank == 0 ) {
-            MPI_Recv(&dist[pos] , height * n , MPI_INT , 1 , 0 , MPI_COMM_WORLD, MPI_STATUS_IGNORE) ;
-        }
-        */
-    
-        
+
         
         MPI_Barrier(MPI_COMM_WORLD);
        
-        
-        
-        
-        // MPI_Bcast( &dist[pos], height * n , MPI_INT, 1 , MPI_COMM_WORLD  ) ;
-    //    MPI_Bcast(dist , n*n , MPI_INT , 0 , MPI_COMM_WORLD) ;
-   //     cudaMemcpy(garr , dist , arrsize , cudaMemcpyHostToDevice);
+
         if(rank == 0 ) {
             
-   //       cudaMemcpy(garr,dist, arrsize,cudaMemcpyHostToDevice);
-   //         fuckcuda<<<blocknum, blocksize>>>(garr , gdata);  
+
             phase2_vertical<<<dim3(1,round), dim3(32,32)>>>(garr , gdata ) ;
             phase2_row<<<dim3(round,1), dim3(32,32)>>>(garr, gdata) ;
             cudaMemcpy(dist , garr , arrsize , cudaMemcpyDeviceToHost) ;
         }
         else if(rank == 1 ) {
     
-   //       cudaMemcpy(garr,dist, arrsize,cudaMemcpyHostToDevice);
-   //         fuckcuda<<<blocknum, blocksize>>>(garr , gdata);  
+
             phase2_row<<<dim3(round,1), dim3(32,32)>>>(garr, gdata) ;
             cudaMemcpy(dist , garr , arrsize , cudaMemcpyDeviceToHost) ;
 
@@ -335,18 +319,9 @@ void block_FW(int rank , int size ) {
         if(start + 32 > n ) height = n - start ;
         int pos = start * n ;
         MPI_Bcast( &dist[pos], height * n , MPI_INT, 0 , MPI_COMM_WORLD  ) ;
-    /*    
-        if(rank == 1 ) {
-            MPI_Send(&dist[pos] ,height * n , MPI_INT , 0 , 0 , MPI_COMM_WORLD ) ;    
-        }
-        else if(rank == 0 ) {
-            MPI_Recv(&dist[pos] , height * n , MPI_INT , 1 , 0 , MPI_COMM_WORLD, MPI_STATUS_IGNORE) ;
-        }
-        */
+
         MPI_Barrier(MPI_COMM_WORLD);
-       // MPI_Bcast( &dist[pos], height * n , MPI_INT, 1 , MPI_COMM_WORLD  ) ;
-    //    MPI_Bcast(dist , n*n , MPI_INT , 0 , MPI_COMM_WORLD) ;
-   //     cudaMemcpy(garr , dist , arrsize , cudaMemcpyHostToDevice);
+
         if(rank == 0 ) {
         //    cudaMemcpy(garr , dist , arrsize , cudaMemcpyHostToDevice);
             Phase_3<<<dim3(round, round), dim3(32, 32)>>>(garr, r, n);

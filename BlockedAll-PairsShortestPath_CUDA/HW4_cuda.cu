@@ -258,12 +258,6 @@ void block_FW() {
     sortans3= new int [n*n] ;
     int *sortans ;
     sortans = new int [n*n] ;
-/*
-    for (int i = 0 ; i < n ; i ++ ){
-        for (int j = 0 ; j < n ; j ++ ){
-            dist[i*n+j] = Dist[i][j];
-        }
-    }*/
 
 
 
@@ -272,115 +266,33 @@ void block_FW() {
     for (int r = 0; r < round; ++r) {
 
 
-        /* Phase 1*/
+
 
         data[0] = r ;
         data[1] = n ;
         cudaMemcpy(gdata,data, sizeof(int)*2,cudaMemcpyHostToDevice);
-//        data[0] = r ;
-  //      data[1] = n ;
 
-//        cudaMemcpy(garr,dist, arrsize,cudaMemcpyHostToDevice);
-  //      cudaMemcpy(gdata,data, sizeof(int)*2,cudaMemcpyHostToDevice);
         fuckcuda<<<blocknum, blocksize>>>(garr , gdata);  
-
-
-    //    cudaMemcpy(dist, garr, arrsize, cudaMemcpyDeviceToHost);
-        /*
-           for (int i = 0 ; i < n ; i ++ ){
-           for (int j = 0 ; j < n ; j ++){
-
-           Dist[i][j] = sortans[i*n+j] ;
-
-           }
-           }
-         */
-        //cudaFree(garr);
-        //cudaFree(gdata) ;
-        //delete[] sortans ;
-        //delete[] data ;
-        /* Phase 2*/
-        /*
-           for (int i = 0 ; i < n ; i ++ ){
-           for (int j = 0 ; j < n ; j ++ ){
-           dist[i*n+j] = Dist[i][j];
-           }
-           }*/
-      //  cudaMemcpy(garr,dist, arrsize,cudaMemcpyHostToDevice);
-      //  cudaMemcpy(gdata,data, sizeof(int)*2,cudaMemcpyHostToDevice);
-        //        cudaMemcpy(gdata,data, sizeof(int)*2,cudaMemcpyHostToDevice);
-
-        phase2_vertical<<<dim3(1,round), dim3(32,32)>>>(garr , gdata ) ;
-     //   cudaMemcpy( dist , garr,arrsize , cudaMemcpyDeviceToHost) ;
-
-
-       // cudaMemcpy(garr,dist, arrsize,cudaMemcpyHostToDevice);
-       // cudaMemcpy(gdata,data, sizeof(int)*2,cudaMemcpyHostToDevice);
-
-        phase2_row<<<dim3(round,1), dim3(32,32)>>>(garr, gdata) ;
-
-        //cudaMemcpy(dist , garr,arrsize , cudaMemcpyDeviceToHost) ;
-
-
-        /*
-           cal(r, r, 0, r, 1);
+   cal(r, r, 0, r, 1);
            cal(r, r, r + 1, round - r - 1, 1);
            cal(r, 0, r, 1, r);
            cal(r, r + 1, r, 1, round - r - 1);
-         */
-        /*
-           for (int i = 0 ; i < n ; i ++ ){
-           for (int j = 0 ; j < n ; j ++ ){
-           dist[i*n+j] = Dist[i][j];
-           }
-           }
-         */
-
-      //  cudaMemcpy(garr ,dist, arrsize,cudaMemcpyHostToDevice);
 
         Phase_3<<<dim3(round, round), dim3(32, 32)>>>(garr, r, n);
 
 
 
-        //cudaMemcpy(dist, garr, arrsize, cudaMemcpyDeviceToHost);
-        /*
-
-           for (int i = 0 ; i < n ; i ++ ){
-           for (int j = 0 ; j < n ; j ++){
-
-           Dist[i][j] = sortans3[i*n+j] ;
-
-           }
-           }
-         */
-        //cudaFree(shit) ;
-        //delete[] sortans3 ;
-        /*
-           cal(r, 0, 0, r, r);
-           cal(r, 0, r + 1, round - r - 1, r);
-           cal(r, r + 1, 0, r, round - r - 1);
-           cal(r, r + 1, r + 1, round - r - 1, round - r - 1);
-         */
 
     }
 
     cudaMemcpy(dist, garr, arrsize, cudaMemcpyDeviceToHost);
-/*
-    for (int i = 0 ; i < n ; i ++ ){
-        for (int j = 0 ; j < n ; j ++){
 
-            Dist[i][j] = dist[i*n+j] ;
-
-        }
-    }
-    */
     cudaFree(garr);
     cudaFree(gdata) ;
     delete[] sortans ;
     delete[] data ;
- //   cudaFree(shit) ;
+
     delete[] sortans3 ;
-  //  cudaFree(phase2arr1) ;
-  //  cudaFree(phase2arr2) ;
+
 }
 
