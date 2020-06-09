@@ -8,8 +8,7 @@
 #define HEIGHT 2400
 #define WIDTH 1600
 // for this example, kernel width and height are both 4
-// Also, to simulate the code in Fast Convolution, the output channel is one
-//	(in Fast Convolution, the output channel is seperated caculated into for loop)
+
 struct nz_info{
 	int c;
 	int h;
